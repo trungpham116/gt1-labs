@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GT1 Labs Buổi 1</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f8fafc;color:#0f172a;margin:0}
+    .wrap{max-width:900px;margin:0 auto;padding:24px}
+    h1{font-size:clamp(28px,6vw,44px);margin:0 0 8px}
+    .lead{font-size:clamp(16px,3.5vw,21px);color:#475569;margin:0 0 20px}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:18px;margin:14px 0}
+    .btn{display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:12px 16px;border-radius:12px;font-weight:700}
+    .muted{color:#64748b}
+    ul{line-height:1.7}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <h1>GT1 Labs Buổi 1</h1>
+  <p class="lead">Các lab tương tác mobile-first cho buổi đầu môn Giải tích 1.</p>
+
+  <div class="card">
+    <h2>Lab 0 — x tiến tới ?</h2>
+    <p>Chạm/vuốt để thấy x → a⁻, x → a⁺, x → +∞, x → −∞ là các quá trình.</p>
+    <a class="btn" href="lab0-x-tien-toi.html">Mở Lab 0</a>
+  </div>
+
+  <div class="card">
+    <h2>Lab 1 — Lỗ trên đồ thị</h2>
+    <p>Với f(x)=(x²−1)/(x−1), quan sát f(x) → 2 dù f(1) không xác định.</p>
+    <a class="btn" href="lab1-lo-tren-do-thi.html">Mở Lab 1</a>
+  </div>
+
+  <div class="card">
+    <h2>Lab 2 — Giới hạn một phía</h2>
+    <p>Vuốt x → 0⁻ và x → 0⁺ để thấy giới hạn trái và phải có thể khác nhau.</p>
+    <a class="btn" href="lab2-gioi-han-mot-phia.html">Mở Lab 2</a>
+  </div>
+
+  <div class="card">
+    <h2>Ghi chú triển khai</h2>
+    <ul>
+      <li>Sau khi đưa toàn bộ thư mục này lên một host tĩnh, chỉ cần chia sẻ file <b>index.html</b> hoặc từng lab riêng lẻ.</li>
+      <li>Để tạo QR thật cho từng lab, xem file <b>README_DEPLOY.txt</b> và chạy <b>generate_qr.py</b> sau khi có URL công khai.</li>
+    </ul>
+    <p class="muted">Gói này phù hợp cho GitHub Pages, Cloudflare Pages, Netlify, hoặc một host tĩnh tương tự.</p>
+  </div>
+</main>
+</body>
+</html>
