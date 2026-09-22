@@ -37,15 +37,16 @@ hr{border:0;border-top:1px solid #e2e8f0;margin:18px 0}
 <div class="big math">f(x) = (x² − 1)/(x − 1), &nbsp;x ≠ 1</div>
 <p class="small">Với x ≠ 1, biểu thức rút gọn thành f(x)=x+1.</p>
 <svg id="g" viewBox="0 0 760 430" aria-label="Đồ thị hàm có lỗ tại x bằng 1">
-  <line x1="70" y1="350" x2="710" y2="350" stroke="#0f172a" stroke-width="3"/>
-  <line x1="220" y1="30" x2="220" y2="395" stroke="#0f172a" stroke-width="3"/>
-  <line x1="80" y1="385" x2="650" y2="100" stroke="#2563eb" stroke-width="6"/>
-  <circle cx="410" cy="220" r="13" fill="white" stroke="#dc2626" stroke-width="5"/>
-  <line x1="410" y1="220" x2="410" y2="350" stroke="#94a3b8" stroke-dasharray="8 8" stroke-width="2"/>
-  <line x1="220" y1="220" x2="410" y2="220" stroke="#94a3b8" stroke-dasharray="8 8" stroke-width="2"/>
-  <circle id="pt" cx="330" cy="260" r="12" fill="#059669"/>
-  <text x="420" y="205" fill="#dc2626" font-size="24" font-weight="700">lỗ (1,2)</text>
-  <text x="650" y="120" fill="#2563eb" font-size="26">y=x+1</text>
+  <!-- Trục tọa độ: gốc O = (180,350), cùng tỉ lệ 1 đơn vị = 70 px trên cả hai trục -->
+  <line x1="50" y1="350" x2="710" y2="350" stroke="#0f172a" stroke-width="3"/>
+  <line x1="180" y1="25" x2="180" y2="395" stroke="#0f172a" stroke-width="3"/>
+  <line x1="75" y1="385" x2="460" y2="0" stroke="#2563eb" stroke-width="6"/>
+  <circle cx="250" cy="210" r="13" fill="white" stroke="#dc2626" stroke-width="5"/>
+  <line x1="250" y1="210" x2="250" y2="350" stroke="#94a3b8" stroke-dasharray="8 8" stroke-width="2"/>
+  <line x1="180" y1="210" x2="250" y2="210" stroke="#94a3b8" stroke-dasharray="8 8" stroke-width="2"/>
+  <circle id="pt" cx="166" cy="294" r="12" fill="#059669"/>
+  <text x="262" y="192" fill="#dc2626" font-size="24" font-weight="700">lỗ (1,2)</text>
+  <text x="470" y="34" fill="#2563eb" font-size="26">y=x+1</text>
 </svg>
 
 <div class="row">
@@ -69,11 +70,12 @@ function setSide(q){side=q; document.getElementById('L').classList.toggle('activ
 document.getElementById('L').onclick=()=>setSide('L'); document.getElementById('R').onclick=()=>setSide('R'); s.oninput=render;
 function render(){
  const t=+s.value/100;
- let x = side==='L' ? -0.6 + 1.58*t : 2.6 - 1.58*t;
+ let x = side==='L' ? -0.20 + 1.18*t : 2.20 - 1.18*t;
  if(Math.abs(x-1)<0.02) x = side==='L'?0.98:1.02;
  const f=x+1;
- // graph mapping: x in [-1,3] -> [30,790]? here axis-based manually
- const cx=220 + x*190, cy=350 - f*65;
+ // Ánh xạ đúng theo cùng một tỉ lệ trên hai trục: 1 đơn vị = 70 px
+ const x0=180, y0=350, scale=70;
+ const cx=x0 + scale*x, cy=y0 - scale*f;
  pt.setAttribute('cx',cx); pt.setAttribute('cy',cy);
  xv.textContent=x.toFixed(2); fv.textContent=f.toFixed(2);
 }

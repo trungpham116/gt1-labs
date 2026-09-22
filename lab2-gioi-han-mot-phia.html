@@ -62,10 +62,28 @@ const s=document.getElementById('s'),p=document.getElementById('p'),proc=documen
 let side='L';
 function setSide(q){side=q; s.value=0; document.getElementById('BL').classList.toggle('active',q==='L');document.getElementById('BR').classList.toggle('active',q==='R');render();}
 document.getElementById('BL').onclick=()=>setSide('L'); document.getElementById('BR').onclick=()=>setSide('R'); s.oninput=render;
+function bezier(P0,P1,P2,P3,u){
+ const v=1-u;
+ return v*v*v*P0 + 3*v*v*u*P1 + 3*v*u*u*P2 + u*u*u*P3;
+}
 function render(){
  const t=+s.value/100;
- if(side==='L'){let cx=100+(370-100)*t; let cy=300-(50*t); p.setAttribute('cx',cx);p.setAttribute('cy',cy);proc.textContent='x → 0⁻';dest.textContent=(0.35+0.65*t).toFixed(2)+' → 1';}
- else{let cx=660-(270*t); let cy=205-(85*t);p.setAttribute('cx',cx);p.setAttribute('cy',cy);proc.textContent='x → 0⁺';dest.textContent=(2.10+0.90*t).toFixed(2)+' → 3';}
+ if(side==='L'){
+   const u=t; // từ trái tiến dần tới x=0
+   const cx=bezier(80,180,290,380,u);
+   const cy=bezier(300,300,280,250,u);
+   p.setAttribute('cx',cx); p.setAttribute('cy',cy);
+   proc.textContent='x → 0⁻';
+   dest.textContent=(0.35+0.65*t).toFixed(2)+' → 1';
+ }
+ else{
+   const u=1-t; // từ phải tiến dần về x=0
+   const cx=bezier(380,440,540,680,u);
+   const cy=bezier(120,180,200,205,u);
+   p.setAttribute('cx',cx); p.setAttribute('cy',cy);
+   proc.textContent='x → 0⁺';
+   dest.textContent=(2.10+0.90*t).toFixed(2)+' → 3';
+ }
 }
 setSide('L');
 </script></body></html>
