@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>VRL-GT1-01 · Miền xác định</title>
+<style>
+  :root { --bg:#0f1419; --card:#1a2332; --ink:#e8eef6; --muted:#8aa0b8; --acc:#3d9cf0; --ok:#3ecf8e; --bad:#f07178; --line:#2a3a4e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { background:var(--bg); color:var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { display:flex; flex-direction:column; max-width:480px; margin:0 auto; min-height:100%; }
+  header { padding:12px 16px 8px; }
+  header .code { font-size:11px; letter-spacing:.08em; color:var(--acc); font-weight:700; }
+  header h1 { font-size:18px; font-weight:650; margin-top:2px; }
+  header p { font-size:13px; color:var(--muted); margin-top:4px; line-height:1.4; }
+  .tabs { display:flex; gap:6px; padding:0 16px 10px; }
+  .tabs button { flex:1; min-height:44px; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:8px 4px; font-size:12px; }
+  .tabs button.on { background:#1e4a7a; border-color:var(--acc); }
+  canvas { width:100%; height:240px; background:#0b1016; display:block; }
+  .panel { padding:12px 16px 20px; }
+  .readout { background:var(--card); border-radius:12px; padding:12px; margin-bottom:12px; }
+  .readout .row { display:flex; justify-content:space-between; gap:8px; font-size:14px; margin:4px 0; }
+  .readout .val { font-variant-numeric: tabular-nums; font-weight:600; text-align:right; }
+  .bad { color:var(--bad); }
+  .ok { color:var(--ok); }
+  input[type=range] { width:100%; margin:10px 0 4px; accent-color:var(--acc); min-height:28px; }
+  .q { font-size:13px; color:var(--muted); margin-top:10px; line-height:1.45; }
+  .q b { color:var(--ink); }
+</style>
+</head>
+<body>
+<header>
+  <div class="code">VRL-GT1-01 · LAB 1</div>
+  <h1>Hàm số “được phép sống” ở đâu?</h1>
+  <p>Kéo <i>x</i>. Đồ thị chỉ hiện ở miền xác định.</p>
+</header>
+<div class="tabs">
+  <button class="on" data-f="sqrt">√(x−1)</button>
+  <button data-f="inv">1/(x−2)</button>
+  <button data-f="ln">ln(x+1)</button>
+</div>
+<canvas id="c" width="720" height="480"></canvas>
+<div class="panel">
+  <div class="readout">
+    <div class="row"><span>x</span><span class="val" id="xv">2.00</span></div>
+    <div class="row"><span>f(x)</span><span class="val" id="fv">1.00</span></div>
+    <div class="row"><span>Miền</span><span class="val" id="dom">x ≥ 1</span></div>
+  </div>
+  <label style="font-size:13px;color:var(--muted)">Giá trị x</label>
+  <input type="range" id="xr" min="-1" max="6" step="0.01" value="2"/>
+  <div class="q">
+    <b>Quan sát.</b> 1) Đồ thị bắt đầu / ngắt tại đâu?<br/>
+    2) Điều kiện đại số nào loại điểm?<br/>
+    3) Miền trên đồ thị có trùng miền biến đổi không?
+  </div>
+</div>
+<script>
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+const xr=document.getElementById('xr');
+let kind='sqrt';
+const F={
+  sqrt:{f:x=>x>=1?Math.sqrt(x-1):NaN, ok:x=>x>=1, dom:'x ≥ 1', xmin:-1,xmax:6,ymin:-0.5,ymax:2.4, smin:-1,smax:6,sdef:2},
+  inv:{f:x=>x!==2?1/(x-2):NaN, ok:x=>Math.abs(x-2)>1e-9, dom:'x ≠ 2', xmin:-1,xmax:5,ymin:-4,ymax:4, smin:-1,smax:5,sdef:3},
+  ln:{f:x=>x>-1?Math.log(x+1):NaN, ok:x=>x>-1, dom:'x > −1', xmin:-2,xmax:5,ymin:-3,ymax:2, smin:-2,smax:5,sdef:1}
+};
+function applySlider(){
+  const m=F[kind];
+  xr.min=m.smin; xr.max=m.smax;
+  let v=parseFloat(xr.value);
+  if(v<m.smin||v>m.smax) xr.value=String(m.sdef);
+}
+document.querySelectorAll('.tabs button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); kind=b.dataset.f;
+    xr.value=String(F[kind].sdef);
+    applySlider(); draw();
+  };
+});
+function mapX(x,m){return (x-m.xmin)/(m.xmax-m.xmin)*canvas.width;}
+function mapY(y,m){return canvas.height-(y-m.ymin)/(m.ymax-m.ymin)*canvas.height;}
+function draw(){
+  const m=F[kind], x=parseFloat(xr.value);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(kind==='sqrt'){
+    ctx.fillStyle='rgba(240,113,120,0.10)';
+    ctx.fillRect(0,0,mapX(1,m),canvas.height);
+  }
+  if(kind==='ln'){
+    ctx.fillStyle='rgba(240,113,120,0.10)';
+    ctx.fillRect(0,0,mapX(-1,m),canvas.height);
+  }
+  if(kind==='inv'){
+    ctx.strokeStyle='#f07178'; ctx.setLineDash([5,5]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(mapX(2,m),0); ctx.lineTo(mapX(2,m),canvas.height); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#f07178'; ctx.font='18px system-ui';
+    ctx.fillText('chỉ loại x = 2', mapX(2,m)+10, 28);
+  }
+  ctx.strokeStyle='#2a3a4e'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,mapY(0,m)); ctx.lineTo(canvas.width,mapY(0,m)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mapX(0,m),0); ctx.lineTo(mapX(0,m),canvas.height); ctx.stroke();
+  ctx.strokeStyle='#3d9cf0'; ctx.lineWidth=3; ctx.beginPath();
+  let pen=false;
+  for(let px=0;px<canvas.width;px++){
+    const xx=m.xmin+px/canvas.width*(m.xmax-m.xmin);
+    if(kind==='inv' && Math.abs(xx-2)<0.03){pen=false;continue;}
+    const yy=m.f(xx);
+    if(!isFinite(yy)||Math.abs(yy)>20){pen=false;continue;}
+    const py=mapY(yy,m);
+    if(!pen){ctx.moveTo(px,py);pen=true;} else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  const y=m.f(x), valid=m.ok(x)&&isFinite(y);
+  document.getElementById('xv').textContent=x.toFixed(2);
+  document.getElementById('dom').textContent=m.dom;
+  const fv=document.getElementById('fv');
+  if(valid){
+    fv.textContent=y.toFixed(3); fv.className='val ok';
+    ctx.fillStyle='#3ecf8e'; ctx.beginPath(); ctx.arc(mapX(x,m),mapY(y,m),8,0,6.28); ctx.fill();
+  } else {
+    fv.textContent='không có giá trị thực'; fv.className='val bad';
+    ctx.strokeStyle='#f07178'; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(mapX(x,m),0); ctx.lineTo(mapX(x,m),canvas.height); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+xr.oninput=draw; applySlider(); draw();
+</script>
+</body>
+</html>

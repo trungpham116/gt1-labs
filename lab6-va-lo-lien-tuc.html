@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>VRL-GT1-06 · Vá lỗ</title>
+<style>
+  :root { --bg:#0f1419; --card:#1a2332; --ink:#e8eef6; --muted:#8aa0b8; --acc:#3d9cf0; --ok:#3ecf8e; --line:#2a3a4e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,sans-serif; }
+  body { display:flex; flex-direction:column; max-width:480px; margin:0 auto; }
+  header { padding:12px 16px 8px; }
+  header .code { font-size:11px; letter-spacing:.08em; color:var(--acc); font-weight:700; }
+  header h1 { font-size:18px; margin-top:2px; }
+  header p { font-size:13px; color:var(--muted); margin-top:4px; line-height:1.4; }
+  canvas { width:100%; height:240px; background:#0b1016; display:block; }
+  .panel { padding:12px 16px 20px; }
+  .eq { background:var(--card); border-radius:12px; padding:12px; font-size:13px; line-height:1.7; margin-bottom:12px; }
+  .eq .hl { color:var(--ok); font-weight:650; }
+  input[type=range]{width:100%; accent-color:var(--acc); margin:8px 0;}
+  .status { margin-top:10px; padding:12px; border-radius:12px; background:var(--card); font-size:14px; line-height:1.5; }
+  .status.yes { outline:1px solid var(--ok); }
+</style>
+</head>
+<body>
+<header>
+  <div class="code">VRL-GT1-06 · LAB 6</div>
+  <h1>Vá lỗ bằng tham số</h1>
+  <p>Kéo duy nhất a. Điểm đặc (2, a) có khớp vòng rỗng (2, 4) không?</p>
+</header>
+<canvas id="c" width="720" height="480"></canvas>
+<div class="panel">
+  <div class="eq">
+    f<sub>a</sub>(x) = (x²−4)/(x−2) khi x ≠ 2<br/>
+    f<sub>a</sub>(2) = a<br/>
+    f(2) = <b id="fa">0.00</b> &nbsp;·&nbsp; lim<sub>x→2</sub> f = 4<br/>
+    liên tục tại 2 ⇔ a = 4
+  </div>
+  <label style="font-size:13px;color:var(--muted)">Tham số a</label>
+  <input type="range" id="a" min="0" max="6" step="0.01" value="1"/>
+  <div class="status" id="st"></div>
+</div>
+<script>
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+const aEl=document.getElementById('a');
+const m={xmin:-0.2,xmax:4.2,ymin:-0.2,ymax:6.2};
+function mx(x){return (x-m.xmin)/(m.xmax-m.xmin)*canvas.width;}
+function my(y){return canvas.height-(y-m.ymin)/(m.ymax-m.ymin)*canvas.height;}
+function draw(){
+  const a=parseFloat(aEl.value);
+  document.getElementById('fa').textContent=a.toFixed(2);
+  const ok = Math.round(a*100) === 400;
+  const st=document.getElementById('st');
+  st.className='status'+(ok?' yes':'');
+  st.innerHTML = ok
+    ? 'Điểm đặc lấp đúng lỗ. f(2) = lim = 4 → liên tục tại 2 (Ghi nhớ 1, ba điều kiện).'
+    : 'Vòng rỗng ở (2, 4), điểm đặc ở (2, '+a.toFixed(2)+'). Ba điều kiện chưa khớp.';
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#2a3a4e';
+  ctx.beginPath(); ctx.moveTo(0,my(0)); ctx.lineTo(canvas.width,my(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mx(0),0); ctx.lineTo(mx(0),canvas.height); ctx.stroke();
+  // line y=x+1 except hole
+  ctx.strokeStyle='#3d9cf0'; ctx.lineWidth=3; ctx.beginPath();
+  for(let px=0;px<canvas.width;px++){
+    const xx=m.xmin+px/canvas.width*(m.xmax-m.xmin);
+    const yy=xx+2;
+    if(Math.abs(xx-2)<0.04){ctx.stroke();ctx.beginPath();continue;}
+    if(px===0) ctx.moveTo(px,my(yy)); else ctx.lineTo(px,my(yy));
+  }
+  ctx.stroke();
+  // open hole at (1,2)
+  ctx.fillStyle='#0b1016'; ctx.strokeStyle='#e8eef6'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(mx(2),my(4),10,0,6.28); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = ok ? '#3ecf8e' : '#f4a261';
+  ctx.beginPath(); ctx.arc(mx(2),my(a),8,0,6.28); ctx.fill();
+}
+aEl.oninput=draw; draw();
+</script>
+</body>
+</html>

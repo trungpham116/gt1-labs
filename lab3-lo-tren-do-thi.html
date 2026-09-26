@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GT1 Lab 3 — Lỗ trên đồ thị</title><style>
+:root{
+  --bg:#ffffff;--text:#0f172a;--muted:#475569;--line:#cbd5e1;
+  --blue:#2563eb;--red:#dc2626;--green:#059669;--amber:#d97706;
+  --panel:#f8fafc;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:820px;margin:0 auto;padding:16px}
+h1{font-size:clamp(24px,6vw,40px);margin:0 0 8px}
+.lead{font-size:clamp(16px,4vw,21px);color:var(--muted);margin:0 0 16px}
+.card{background:var(--panel);border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin:12px 0}
+.big{font-size:clamp(26px,7vw,44px);font-weight:700}
+.math{font-family:"Times New Roman",serif}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-weight:650;border:1px solid #cbd5e1;border-radius:12px;padding:12px 16px;background:white;min-height:46px;cursor:pointer}
+button.active{border-color:var(--blue);background:#eff6ff;color:#1d4ed8}
+input[type=range]{width:100%;height:40px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat>div{background:white;border:1px solid #e2e8f0;border-radius:12px;padding:10px}
+.label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.value{font-size:clamp(22px,6vw,34px);font-weight:750;margin-top:2px}
+.note{border-left:5px solid var(--blue);padding:10px 12px;background:#eff6ff;border-radius:8px;margin-top:12px}
+.warn{border-left-color:var(--red);background:#fef2f2}
+.ok{border-left-color:var(--green);background:#ecfdf5}
+svg{width:100%;height:auto;display:block;background:white;border-radius:14px;border:1px solid #e2e8f0}
+.small{font-size:14px;color:var(--muted)}
+hr{border:0;border-top:1px solid #e2e8f0;margin:18px 0}
+</style></head>
+<body><main class="wrap">
+<h1>GT1 Lab 3 — Giới hạn và “lỗ”</h1>
+<p class="lead">Kéo <span class="math">x</span> về gần 1 từ trái hoặc phải và quan sát <span class="math">f(x)</span>.</p>
+
+<div class="card">
+<div class="big math">f(x) = (x² − 1)/(x − 1), &nbsp;x ≠ 1</div>
+<p class="small">Với x ≠ 1, biểu thức rút gọn thành f(x)=x+1.</p>
+<svg id="g" viewBox="0 0 760 430" aria-label="Đồ thị hàm có lỗ tại x bằng 1">
+  <!-- Trục tọa độ: gốc O = (180,350), cùng tỉ lệ 1 đơn vị = 70 px trên cả hai trục -->
+  <line x1="50" y1="350" x2="710" y2="350" stroke="#0f172a" stroke-width="3"/>
+  <line x1="180" y1="25" x2="180" y2="395" stroke="#0f172a" stroke-width="3"/>
+  <line x1="75" y1="385" x2="460" y2="0" stroke="#2563eb" stroke-width="6"/>
+  <circle cx="250" cy="210" r="13" fill="white" stroke="#dc2626" stroke-width="5"/>
+  <line x1="250" y1="210" x2="250" y2="350" stroke="#94a3b8" stroke-dasharray="8 8" stroke-width="2"/>
+  <line x1="180" y1="210" x2="250" y2="210" stroke="#94a3b8" stroke-dasharray="8 8" stroke-width="2"/>
+  <circle id="pt" cx="166" cy="294" r="12" fill="#059669"/>
+  <text x="262" y="192" fill="#dc2626" font-size="24" font-weight="700">lỗ (1,2)</text>
+  <text x="470" y="34" fill="#2563eb" font-size="26">y=x+1</text>
+</svg>
+
+<div class="row">
+<button id="L">Tiến từ trái</button><button id="R">Tiến từ phải</button>
+</div>
+<label class="label" for="xslider">Kéo x tiến gần 1</label>
+<input id="xslider" type="range" min="0" max="100" value="20">
+<div class="stat">
+<div><div class="label">x</div><div id="xv" class="value math">0.20</div></div>
+<div><div class="label">f(x)</div><div id="fv" class="value math">1.20</div></div>
+</div>
+</div>
+
+<div class="note ok"><b>Quan sát:</b> Khi x tiến gần 1 từ hai phía, f(x) tiến gần 2.</div>
+<div class="note warn"><b>Nhưng:</b> f(1) không xác định. Vì vậy <span class="math">lim x→1 f(x)=2</span> không phải là câu hỏi “f(1) bằng bao nhiêu?”.</div>
+</main>
+<script>
+const s=document.getElementById('xslider'),pt=document.getElementById('pt'),xv=document.getElementById('xv'),fv=document.getElementById('fv');
+let side='L';
+function setSide(q){side=q; document.getElementById('L').classList.toggle('active',q==='L'); document.getElementById('R').classList.toggle('active',q==='R'); s.value=20; render();}
+document.getElementById('L').onclick=()=>setSide('L'); document.getElementById('R').onclick=()=>setSide('R'); s.oninput=render;
+function render(){
+ const t=+s.value/100;
+ let x = side==='L' ? -0.20 + 1.18*t : 2.20 - 1.18*t;
+ if(Math.abs(x-1)<0.02) x = side==='L'?0.98:1.02;
+ const f=x+1;
+ // Ánh xạ đúng theo cùng một tỉ lệ trên hai trục: 1 đơn vị = 70 px
+ const x0=180, y0=350, scale=70;
+ const cx=x0 + scale*x, cy=y0 - scale*f;
+ pt.setAttribute('cx',cx); pt.setAttribute('cy',cy);
+ xv.textContent=x.toFixed(2); fv.textContent=f.toFixed(2);
+}
+setSide('L');
+</script></body></html>

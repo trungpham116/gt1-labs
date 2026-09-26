@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>VRL-GT1-05 · Giới hạn trái–phải</title>
+<style>
+  :root { --bg:#0f1419; --card:#1a2332; --ink:#e8eef6; --muted:#8aa0b8; --acc:#3d9cf0; --L:#4cc9f0; --R:#f72585; --line:#2a3a4e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; background:var(--bg); color:var(--ink); font-family:system-ui,-apple-system,sans-serif; }
+  body { display:flex; flex-direction:column; max-width:480px; margin:0 auto; }
+  header { padding:12px 16px 8px; }
+  header .code { font-size:11px; letter-spacing:.08em; color:var(--acc); font-weight:700; }
+  header h1 { font-size:18px; margin-top:2px; }
+  header p { font-size:13px; color:var(--muted); margin-top:4px; line-height:1.4; }
+  .tabs { display:flex; gap:6px; padding:0 16px 10px; }
+  .tabs button { flex:1; min-height:44px; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:8px 6px; font-size:12px; }
+  .tabs button.on { background:#1e4a7a; border-color:var(--acc); }
+  canvas { width:100%; height:230px; background:#0b1016; display:block; }
+  .panel { padding:12px 16px 18px; }
+  .vals { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+  .box { background:var(--card); border-radius:12px; padding:10px; }
+  .box .k { font-size:11px; color:var(--muted); }
+  .box .v { font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .L { color:var(--L); } .R { color:var(--R); }
+  input[type=range]{width:100%; accent-color:var(--acc); margin:8px 0;}
+  .ask { font-size:13px; margin:10px 0 6px; }
+  .choices { display:flex; flex-direction:column; gap:6px; }
+  .choices button { text-align:left; min-height:44px; background:var(--card); border:1px solid var(--line); color:var(--ink); border-radius:10px; padding:10px 12px; font-size:13px; }
+  .choices button.sel { border-color:var(--acc); background:#163052; }
+  #verdict { margin-top:10px; font-size:13px; line-height:1.5; color:var(--muted); min-height:3.2em; }
+  #verdict.show { color:var(--ink); }
+</style>
+</head>
+<body>
+<header>
+  <div class="code">VRL-GT1-05 · LAB 5</div>
+  <h1>Hai phía cùng tiến tới một điểm</h1>
+  <p>Chỉ một điều khiển: h → 0⁺. Xanh từ trái, đỏ từ phải.</p>
+</header>
+<div class="tabs">
+  <button class="on" data-m="jump">Hai đích khác nhau</button>
+  <button data-m="same">Cùng một đích</button>
+</div>
+<canvas id="c" width="720" height="460"></canvas>
+<div class="panel">
+  <div class="vals">
+    <div class="box"><div class="k">x<sub>L</sub> = x₀ − h</div><div class="v L" id="xl">—</div><div class="k">f(x<sub>L</sub>)</div><div class="v L" id="fl">—</div></div>
+    <div class="box"><div class="k">x<sub>R</sub> = x₀ + h</div><div class="v R" id="xr">—</div><div class="k">f(x<sub>R</sub>)</div><div class="v R" id="fr">—</div></div>
+  </div>
+  <label style="font-size:13px;color:var(--muted)">h &gt; 0 (kéo nhỏ dần)</label>
+  <input type="range" id="h" min="0.02" max="1.2" step="0.01" value="0.5"/>
+  <div class="ask"><b>Khi h → 0, bạn thấy gì?</b></div>
+  <div class="choices">
+    <button data-a="same">Hai phía cùng tiến về một số</button>
+    <button data-a="diff">Tiến về hai số khác nhau</button>
+    <button data-a="unk">Chưa đủ thông tin</button>
+  </div>
+  <div id="verdict"></div>
+</div>
+<script>
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+let mode='jump', pick=null;
+const hEl=document.getElementById('h');
+function x0of(mode){ return mode==='jump'?0:2; }
+function f(x,mode){
+  if(mode==='jump'){
+    // Ví dụ 3b: sin x (x<0), x^2+5x-2 (x≥0)
+    if(x<0) return Math.sin(x);
+    return x*x+5*x-2; // x>=0, f(0)=-2
+  }
+  // Ví dụ 3a: x^2 (x<2), 3x-2 (x≥2) — hai phía = 4
+  if(x<2) return x*x;
+  if(x>2) return 3*x-2;
+  return 4;
+}
+document.querySelectorAll('.tabs button').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');mode=b.dataset.m;pick=null;document.querySelectorAll('.choices button').forEach(x=>x.classList.remove('sel'));document.getElementById('verdict').className='';document.getElementById('verdict').textContent='';draw();}
+});
+document.querySelectorAll('.choices button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.choices button').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel'); pick=b.dataset.a;
+    const v=document.getElementById('verdict');
+    v.className='show';
+    const correct = mode==='jump'?'diff':'same';
+    const note = mode==='jump'
+      ? ' Ví dụ 3b: 0 ≠ −2 nên giới hạn không tồn tại.'
+      : ' Ví dụ 3a: cả hai phía → 4.';
+    v.innerHTML = (pick===correct?'Đúng hướng. ':'Đối chiếu lại hai giá trị f. ')
+      + 'Sách Ghi nhớ 3: lim tồn tại ⇔ lim trái = lim phải.' + note;
+  };
+});
+function view(mode){
+  return mode==='jump'
+    ? {xmin:-1.4,xmax:1.4,ymin:-3.2,ymax:2.2}
+    : {xmin:0.2,xmax:3.6,ymin:-0.4,ymax:8.5};
+}
+function mx(x,m){return (x-m.xmin)/(m.xmax-m.xmin)*canvas.width;}
+function my(y,m){return canvas.height-(y-m.ymin)/(m.ymax-m.ymin)*canvas.height;}
+function draw(){
+  const m=view(mode);
+  const h=parseFloat(hEl.value), x0=x0of(mode), xl=x0-h, xr=x0+h;
+  const yl=f(xl,mode), yr=f(xr,mode);
+  document.getElementById('xl').textContent=xl.toFixed(3);
+  document.getElementById('xr').textContent=xr.toFixed(3);
+  document.getElementById('fl').textContent=yl.toFixed(3);
+  document.getElementById('fr').textContent=yr.toFixed(3);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#2a3a4e'; ctx.beginPath(); ctx.moveTo(0,my(0,m)); ctx.lineTo(canvas.width,my(0,m)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mx(0,m),0); ctx.lineTo(mx(0,m),canvas.height); ctx.stroke();
+  ctx.strokeStyle='#3d9cf0'; ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let px=0;px<canvas.width;px++){
+    const xx=m.xmin+px/canvas.width*(m.xmax-m.xmin);
+    if(xx>=x0) break;
+    const yy=f(xx,mode); if(!isFinite(yy)) continue;
+    if(px===0) ctx.moveTo(px,my(yy,m)); else ctx.lineTo(px,my(yy,m));
+  }
+  ctx.stroke();
+  ctx.beginPath(); let started=false;
+  for(let px=0;px<canvas.width;px++){
+    const xx=m.xmin+px/canvas.width*(m.xmax-m.xmin);
+    if(xx<=x0) continue;
+    const yy=f(xx,mode); if(!isFinite(yy)) continue;
+    if(!started){ctx.moveTo(px,my(yy,m));started=true;} else ctx.lineTo(px,my(yy,m));
+  }
+  ctx.stroke();
+  function openPt(x,y){
+    ctx.fillStyle='#0b1016'; ctx.strokeStyle='#e8eef6'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(mx(x,m),my(y,m),8,0,6.28); ctx.fill(); ctx.stroke();
+  }
+  function solidPt(x,y,col){
+    ctx.fillStyle=col||'#e8eef6';
+    ctx.beginPath(); ctx.arc(mx(x,m),my(y,m),7,0,6.28); ctx.fill();
+  }
+  if(mode==='same'){
+    /* f(2)=4 thuộc nhánh x≥2 → điểm đặc (2,4) */
+    solidPt(2,4,'#e8eef6');
+  } else {
+    /* lim trái = 0 nhưng f(0)=-2 → vòng rỗng (0,0), điểm đặc (0,-2) */
+    openPt(0,0);
+    solidPt(0,-2,'#e8eef6');
+  }
+  ctx.fillStyle='#4cc9f0'; ctx.beginPath(); ctx.arc(mx(xl,m),my(yl,m),8,0,6.28); ctx.fill();
+  ctx.fillStyle='#f72585'; ctx.beginPath(); ctx.arc(mx(xr,m),my(yr,m),8,0,6.28); ctx.fill();
+  ctx.fillStyle='#e8eef6'; ctx.font='16px system-ui';
+  ctx.fillText('x₀='+x0, mx(x0,m)+8, my(0,m)+22);
+}
+hEl.oninput=draw; draw();
+</script>
+</body>
+</html>
