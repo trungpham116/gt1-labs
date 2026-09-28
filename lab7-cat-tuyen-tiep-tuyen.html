@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GT1 Lab 7 — Cát tuyến và tiếp tuyến</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Cpath d='M10 46 Q24 6 54 18' fill='none' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E"><style>
+:root{
+  --bg:#0f1419;--text:#e8f0f7;--muted:#a8b3bd;--line:#475569;
+  --blue:#2563eb;--red:#dc2626;--green:#059669;--amber:#d97706;
+  --panel:#18212b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{max-width:820px;margin:0 auto;padding:16px}
+h1{font-size:clamp(24px,6vw,40px);margin:0 0 8px}
+.lead{font-size:clamp(16px,4vw,21px);color:var(--muted);margin:0 0 16px}
+.card{background:var(--panel);border:1px solid #e2e8f0;border-radius:18px;padding:14px;margin:12px 0}
+.math{font-family:"Times New Roman",serif}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;font-weight:650;border:1px solid #475569;border-radius:12px;padding:12px 16px;background:#111820;color:var(--text);min-height:46px;cursor:pointer}
+button.active{border-color:var(--blue);background:#eff6ff;color:#1d4ed8}
+input[type=range]{width:100%;height:40px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat>div{background:#111820;border:1px solid #334155;border-radius:12px;padding:10px}
+.label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.value{font-size:clamp(22px,6vw,34px);font-weight:750;margin-top:2px}
+.note{border-left:5px solid var(--blue);padding:10px 12px;background:#13243a;border-radius:8px;margin-top:12px}
+.warn{border-left-color:var(--red);background:#341719}
+.ok{border-left-color:var(--green);background:#102a22}
+svg{width:100%;height:auto;display:block;background:#111820;border-radius:14px;border:1px solid #334155}
+</style></head>
+<body><main class="wrap">
+<h1>GT1 Lab 7 — <span class="math">cát tuyến → tiếp tuyến</span></h1>
+<p class="lead">Hàm <b class="math">f(x) = x²</b>, điểm cố định <span class="math">a = 1</span>. Chỉ kéo <span class="math">h → 0</span>. Mục tiêu: hệ số góc cát tuyến tiến tới <span class="math">f'(1) = 2</span>.</p>
+
+<div class="card">
+  <div class="row">
+    <button data-side="right" class="active">h → 0⁺</button>
+    <button data-side="left">h → 0⁻</button>
+  </div>
+  <svg viewBox="0 0 760 360" aria-label="Cát tuyến và tiếp tuyến">
+    <line x1="60" y1="300" x2="700" y2="300" stroke="#94a3b8" stroke-width="3"/>
+    <line x1="254" y1="30" x2="254" y2="330" stroke="#94a3b8" stroke-width="3"/>
+    <path id="curve" fill="none" stroke="#2563eb" stroke-width="4"/>
+    <line id="tan" x1="60" y1="0" x2="700" y2="0" stroke="#059669" stroke-width="3" stroke-dasharray="8 6"/>
+    <line id="sec" x1="60" y1="0" x2="700" y2="0" stroke="#d97706" stroke-width="3"/>
+    <circle id="Pa" r="9" fill="#e2e8f0"/>
+    <circle id="Pb" r="9" fill="#d97706"/>
+    <text x="210" y="50" font-size="22" fill="#2563eb" font-family="Times New Roman">y = x²</text>
+    <text x="520" y="50" font-size="20" fill="#059669">tiếp tuyến</text>
+    <text x="520" y="76" font-size="20" fill="#d97706">cát tuyến</text>
+  </svg>
+  <label class="label" for="s">Tiến trình |h| → 0</label>
+  <input id="s" type="range" min="0" max="100" value="8">
+  <div class="stat">
+    <div><div class="label">Thương số cát tuyến</div><div id="msec" class="value math">—</div></div>
+    <div><div class="label">Đạo hàm f'(1)=2</div><div id="mder" class="value math">2.000</div></div>
+  </div>
+</div>
+
+<div class="note" id="note"><b>Chốt:</b> đạo hàm tại 1 là giới hạn hệ số góc cát tuyến khi h → 0. Ta không thế h = 0 vào thương số.</div>
+</main>
+<script>
+const sEl=document.getElementById('s');
+const curve=document.getElementById('curve'), tan=document.getElementById('tan'), sec=document.getElementById('sec');
+const Pa=document.getElementById('Pa'), Pb=document.getElementById('Pb');
+const msec=document.getElementById('msec'), note=document.getElementById('note');
+let side='right';
+document.querySelectorAll('button[data-side]').forEach(b=>b.onclick=()=>{
+  side=b.dataset.side;
+  document.querySelectorAll('button[data-side]').forEach(x=>x.classList.toggle('active',x===b));
+  render();
+});
+function f(x){return x*x}
+function X(x){return 200+(x+0.3)*180}
+function Y(y){return 310-y*52}
+function render(){
+  const a=1;
+  const t=+sEl.value/100;
+  const mag=1.20*(1-t)+0.04;
+  const h=side==='right'?mag:-mag;
+  let d='';
+  for(let i=0;i<=80;i++){
+    const x=-1.4+i*3.4/80;
+    d+=(i?'L':'M')+X(x)+','+Y(f(x))+' ';
+  }
+  curve.setAttribute('d',d);
+  const ya=f(a), yb=f(a+h), md=2*a, m=(yb-ya)/h;
+  function line(el,x0,y0,m0){
+    const x1=-1.6,x2=2.2;
+    el.setAttribute('x1',X(x1)); el.setAttribute('y1',Y(y0+m0*(x1-x0)));
+    el.setAttribute('x2',X(x2)); el.setAttribute('y2',Y(y0+m0*(x2-x0)));
+  }
+  line(tan,a,ya,md); line(sec,a,ya,m);
+  Pa.setAttribute('cx',X(a)); Pa.setAttribute('cy',Y(ya));
+  Pb.setAttribute('cx',X(a+h)); Pb.setAttribute('cy',Y(yb));
+  msec.textContent=m.toFixed(3);
+  const close=+sEl.value===100;
+  note.className='note '+(close?'ok':'');
+  note.innerHTML=close
+    ? '<b>Sát biên mô phỏng:</b> h = '+h.toFixed(2)+', hệ số góc = 2+h = '+m.toFixed(2)+'. Giới hạn khi h → 0 là 2.'
+    : '<b>Đang quan sát:</b> |h| = '+Math.abs(h).toFixed(2)+', hệ số góc = '+m.toFixed(2)+'. Tiếp tục kéo |h| về gần 0.';
+}
+sEl.oninput=render; render();
+</script></body></html>
